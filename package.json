@@ -8,13 +8,13 @@
     "test": "node test-docs.mjs && node test-definition.mjs && node test-viewer.mjs && node test-params.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.3",
+    "@anthropic-ai/sdk": "^0.115.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "openai": "^6.48.0"
+    "openai": "^6.49.0"
   },
   "devDependencies": {
     "archiver": "^8.0.0",
-    "playwright": "^1.61.1",
+    "playwright": "^1.62.0",
     "serve": "^14.2.5"
   }
 }
