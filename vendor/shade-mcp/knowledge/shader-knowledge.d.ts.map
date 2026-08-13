@@ -1,0 +1,1 @@
+{"version":3,"file":"shader-knowledge.d.ts","sourceRoot":"","sources":["../../src/knowledge/shader-knowledge.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,gBAAgB,CAAA;AAEvD,eAAO,MAAM,kBAAkB,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,EAAE,CA4BvD,CAAA;AAED,wBAAgB,uBAAuB,CAAC,KAAK,EAAE,MAAM,GAAG,MAAM,CAe7D;AAED,eAAO,MAAM,iBAAiB,EAAE,iBAAiB,EAqFhD,CAAA"}

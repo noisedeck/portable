@@ -1,0 +1,1 @@
+{"version":3,"file":"list-effects.d.ts","sourceRoot":"","sources":["../../../src/tools/utility/list-effects.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAA;AACvB,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,yCAAyC,CAAA;AAIxE,eAAO,MAAM,iBAAiB;IAC5B,SAAS;CACV,CAAA;AAED,wBAAgB,mBAAmB,CAAC,MAAM,EAAE,SAAS,GAAG,IAAI,CAuB3D"}

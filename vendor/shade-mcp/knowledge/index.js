@@ -51,9 +51,9 @@ import { readFileSync } from "fs";
 function parseDefinitionJs(filePath, effectDir) {
   const source = readFileSync(filePath, "utf-8");
   const func = extractString(source, /func\s*[:=]\s*['"](\w+)['"]/) || "unknown";
-  const name = extractString(source, /name\s*[:=]\s*['"]([^'"]+)['"]/);
+  const name = extractQuotedValue(source, "name");
   const namespace = extractString(source, /namespace\s*[:=]\s*['"](\w+)['"]/);
-  const description = extractString(source, /description\s*[:=]\s*['"]([^'"]+)['"]/);
+  const description = extractQuotedValue(source, "description");
   const starter = /starter\s*[:=]\s*true/.test(source) ? true : /starter\s*[:=]\s*false/.test(source) ? false : void 0;
   const tagsMatch = source.match(/tags\s*[:=]\s*\[([^\]]+)\]/);
   const tags = tagsMatch ? tagsMatch[1].split(",").map((t) => t.trim().replace(/['"]/g, "")).filter(Boolean) : void 0;
@@ -67,20 +67,26 @@ function parseDefinitionJs(filePath, effectDir) {
     passes.push({ program: "main" });
   }
   const globals = {};
-  const globalsMatch = source.match(/globals\s*[:=]\s*\{([\s\S]*?)\n\s*\}/);
-  if (globalsMatch) {
-    const uniformRegex = /(\w+):\s*(\{[^}]*\})/g;
-    let uMatch;
-    while ((uMatch = uniformRegex.exec(globalsMatch[1])) !== null) {
-      const name2 = uMatch[1];
-      const block = uMatch[2];
-      const uniform = extractString(block, /uniform:\s*['"](\w+)['"]/);
+  const globalsKey = source.match(/globals\s*[:=]\s*\{/);
+  const globalsText = globalsKey ? balancedBraceSlice(source, globalsKey.index + globalsKey[0].length - 1) : null;
+  if (globalsText) {
+    const body = globalsText.slice(1, -1);
+    const keyRegex = /(\w+)\s*:\s*\{/g;
+    let kMatch;
+    while ((kMatch = keyRegex.exec(body)) !== null) {
+      const name2 = kMatch[1];
+      const blockStart = kMatch.index + kMatch[0].length - 1;
+      const block = balancedBraceSlice(body, blockStart);
+      if (!block) continue;
+      keyRegex.lastIndex = blockStart + block.length;
+      const ownFields = stripNestedObjects(block);
+      const uniform = extractString(ownFields, /uniform:\s*['"](\w+)['"]/);
       if (!uniform) continue;
-      const type = extractString(block, /type:\s*['"](\w+)['"]/) || "float";
-      const min = extractNumber(block, /min:\s*([-\d.]+)/);
-      const max = extractNumber(block, /max:\s*([-\d.]+)/);
-      const step = extractNumber(block, /step:\s*([-\d.]+)/);
-      const defaultVal = extractNumber(block, /default:\s*([-\d.]+)/);
+      const type = extractString(ownFields, /type:\s*['"](\w+)['"]/) || "float";
+      const min = extractNumber(ownFields, /min:\s*([-\d.]+)/);
+      const max = extractNumber(ownFields, /max:\s*([-\d.]+)/);
+      const step = extractNumber(ownFields, /step:\s*([-\d.]+)/);
+      const defaultVal = extractNumber(ownFields, /default:\s*([-\d.]+)/);
       globals[name2] = {
         name: name2,
         type,
@@ -108,6 +114,40 @@ function parseDefinitionJs(filePath, effectDir) {
 function extractString(source, regex) {
   const match = source.match(regex);
   return match ? match[1] : void 0;
+}
+function extractQuotedValue(source, key) {
+  const re = new RegExp(`\\b${key}\\s*[:=]\\s*(['"])((?:\\\\.|[^\\\\\\r\\n])*?)\\1`);
+  const match = source.match(re);
+  return match ? match[2].replace(/\\(['"\\])/g, "$1") : void 0;
+}
+function balancedBraceSlice(s, openIndex) {
+  let depth = 0;
+  for (let i = openIndex; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) return s.slice(openIndex, i + 1);
+    }
+  }
+  return null;
+}
+function stripNestedObjects(block) {
+  let depth = 0;
+  let out = "";
+  for (let i = 0; i < block.length; i++) {
+    const ch = block[i];
+    if (ch === "{") {
+      depth++;
+      if (depth <= 1) out += ch;
+    } else if (ch === "}") {
+      if (depth <= 1) out += ch;
+      depth--;
+    } else if (depth <= 1) {
+      out += ch;
+    }
+  }
+  return out;
 }
 function extractNumber(source, regex) {
   const match = source.match(regex);
@@ -147,7 +187,8 @@ var EffectIndex = class {
           const def = loadEffectDefinition(effectDir);
           const id = `${ns}/${effect}`;
           this.effects.set(id, { ...def, namespace: ns });
-        } catch {
+        } catch (err) {
+          console.warn(`[shade-mcp] skipping unparseable effect ${ns}/${effect}: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     }
@@ -517,6 +558,14 @@ var ShaderKnowledgeDB = class {
 // src/config.ts
 import { resolve } from "path";
 var VALID_BACKENDS = ["webgl2", "webgpu"];
+function parseCount(value, fallback) {
+  const parsed = parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+function parseDuration(value, fallback) {
+  const parsed = parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
 function parseBackend(value) {
   if (value && VALID_BACKENDS.includes(value)) {
     return value;
@@ -527,23 +576,42 @@ function getConfig() {
   const projectRoot = process.env.SHADE_PROJECT_ROOT || process.cwd();
   return {
     effectsDir: process.env.SHADE_EFFECTS_DIR || resolve(projectRoot, "effects"),
-    viewerPort: parseInt(process.env.SHADE_VIEWER_PORT || "0", 10),
+    viewerPort: parseCount(process.env.SHADE_VIEWER_PORT, 0),
     defaultBackend: parseBackend(process.env.SHADE_BACKEND),
     projectRoot,
     globalsPrefix: process.env.SHADE_GLOBALS_PREFIX || void 0,
     viewerPath: process.env.SHADE_VIEWER_PATH || void 0,
-    maxBrowsers: parseInt(process.env.SHADE_MAX_BROWSERS || "1", 10)
+    maxBrowsers: parseCount(process.env.SHADE_MAX_BROWSERS, 1),
+    timeoutMs: parseDuration(process.env.SHADE_TIMEOUT_MS, 12e4),
+    aiTimeoutMs: parseDuration(process.env.SHADE_AI_TIMEOUT_MS, 12e4),
+    aiModel: process.env.SHADE_AI_MODEL || void 0
   };
 }
 
 // src/knowledge/shared-instances.ts
+var INDEX_TTL_MS = 5e3;
 var effectIndex = null;
+var builtAt = 0;
+var building = null;
 async function getSharedEffectIndex() {
-  if (!effectIndex) {
-    effectIndex = new EffectIndex();
-    await effectIndex.initialize(getConfig().effectsDir);
+  if (effectIndex && Date.now() - builtAt < INDEX_TTL_MS) return effectIndex;
+  if (building) return building;
+  building = (async () => {
+    const index = new EffectIndex();
+    await index.initialize(getConfig().effectsDir);
+    effectIndex = index;
+    builtAt = Date.now();
+    return index;
+  })();
+  try {
+    return await building;
+  } finally {
+    building = null;
   }
-  return effectIndex;
+}
+function invalidateSharedEffectIndex() {
+  effectIndex = null;
+  builtAt = 0;
 }
 
 // src/knowledge/shader-knowledge.ts
@@ -4056,6 +4124,7 @@ export {
   getKnowledgeByTopic,
   getShaderKnowledgeDB,
   getSharedEffectIndex,
+  invalidateSharedEffectIndex,
   retrieveForAgent,
   retrieveLoopSafeExamples,
   searchByLoopPattern,

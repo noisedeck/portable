@@ -1,8 +1,5 @@
-import { Page } from 'playwright';
-
-type Backend = 'webgl2' | 'webgpu';
-
-interface ViewerGlobals {
+import type { Backend } from '../config.js';
+export interface ViewerGlobals {
     canvasRenderer: string;
     renderingPipeline: string;
     currentBackend: string;
@@ -11,9 +8,9 @@ interface ViewerGlobals {
     setPausedTime: string;
     frameCount: string;
 }
-declare const DEFAULT_GLOBALS: ViewerGlobals;
-declare function globalsFromPrefix(prefix: string): ViewerGlobals;
-interface BrowserSessionOptions {
+export declare const DEFAULT_GLOBALS: ViewerGlobals;
+export declare function globalsFromPrefix(prefix: string): ViewerGlobals;
+export interface BrowserSessionOptions {
     backend: Backend;
     headless?: boolean;
     viewerPort?: number;
@@ -21,8 +18,9 @@ interface BrowserSessionOptions {
     viewerPath?: string;
     effectsDir?: string;
     globals?: ViewerGlobals;
+    timeoutMs?: number;
 }
-interface ImageMetrics {
+export interface ImageMetrics {
     mean_rgb: [number, number, number];
     mean_alpha: number;
     std_rgb: [number, number, number];
@@ -33,7 +31,7 @@ interface ImageMetrics {
     is_essentially_blank: boolean;
     is_monochrome: boolean;
 }
-interface CompileResult {
+export interface CompileResult {
     status: 'ok' | 'error';
     backend: string;
     passes: Array<{
@@ -44,7 +42,7 @@ interface CompileResult {
     message: string;
     console_errors?: string[];
 }
-interface RenderResult {
+export interface RenderResult {
     status: 'ok' | 'error';
     backend: string;
     frame?: {
@@ -55,7 +53,7 @@ interface RenderResult {
     metrics?: ImageMetrics;
     console_errors?: string[];
 }
-interface BenchmarkResult {
+export interface BenchmarkResult {
     status: 'ok' | 'error';
     backend: string;
     achieved_fps: number;
@@ -69,7 +67,7 @@ interface BenchmarkResult {
     };
     console_errors?: string[];
 }
-interface ParityResult {
+export interface ParityResult {
     status: 'ok' | 'error' | 'mismatch';
     maxDiff: number;
     meanDiff: number;
@@ -89,34 +87,4 @@ interface ParityResult {
     yFlipRatio?: number;
     issues?: string[];
 }
-
-interface ConsoleEntry {
-    type: string;
-    text: string;
-}
-declare class BrowserSession {
-    private options;
-    private viewerPath;
-    private browser;
-    private context;
-    page: Page | null;
-    globals: ViewerGlobals;
-    private baseUrl;
-    private consoleMessages;
-    private _isSetup;
-    constructor(opts: BrowserSessionOptions);
-    setup(): Promise<void>;
-    teardown(): Promise<void>;
-    setBackend(backend: Backend): Promise<void>;
-    clearConsoleMessages(): void;
-    getConsoleMessages(): ConsoleEntry[];
-    runWithConsoleCapture<T>(fn: () => Promise<T>): Promise<T & {
-        console_errors?: string[];
-    }>;
-    get backend(): Backend;
-    selectEffect(effectId: string): Promise<void>;
-    getEffectGlobals(): Promise<Record<string, any>>;
-    resetUniformsToDefaults(): Promise<void>;
-}
-
-export { BrowserSession as B, type CompileResult as C, DEFAULT_GLOBALS as D, type ImageMetrics as I, type ParityResult as P, type RenderResult as R, type ViewerGlobals as V, type BenchmarkResult as a, type BrowserSessionOptions as b, globalsFromPrefix as g };
+//# sourceMappingURL=types.d.ts.map

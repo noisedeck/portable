@@ -1,4 +1,4 @@
-interface EffectUniform {
+export interface EffectUniform {
     name: string;
     type: 'float' | 'int' | 'vec2' | 'vec3' | 'vec4' | 'boolean';
     uniform: string;
@@ -9,14 +9,14 @@ interface EffectUniform {
     choices?: Record<string, number>;
     control?: boolean;
 }
-interface EffectPass {
+export interface EffectPass {
     name?: string;
     program: string;
     type?: 'render' | 'compute' | 'gpgpu';
     inputs?: Record<string, string>;
     outputs?: Record<string, string>;
 }
-interface EffectDefinition {
+export interface EffectDefinition {
     func: string;
     name?: string;
     namespace?: string;
@@ -28,5 +28,4 @@ interface EffectDefinition {
     format: 'json' | 'js';
     effectDir: string;
 }
-
-export type { EffectDefinition as E, EffectPass as a, EffectUniform as b };
+//# sourceMappingURL=types.d.ts.map
