@@ -17855,10 +17855,7 @@ function registerGenerateManifest(server2) {
 }
 
 // src/version.ts
-import { createRequire } from "module";
-var require2 = createRequire(import.meta.url);
-var pkg = require2("../package.json");
-var VERSION = pkg.version;
+var VERSION = "0.2.2";
 
 // src/index.ts
 var config2 = getConfig();
