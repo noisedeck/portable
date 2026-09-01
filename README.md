@@ -1,3 +1,8 @@
+<!-- repo-hero -->
+<a href="https://noisemaker.app/"><img src="docs/hero.jpg" alt="Portable Portable Effects Format for Noisemaker" width="100%"></a>
+
+<sub>Open source from <a href="https://noisefactor.io">Noise Factor</a> &middot; <a href="https://github.com/noisefactorllc">more projects</a></sub>
+
 # Portable Effects for Noisemaker
 
 > ⚠️ **Note:** The Portable Effects specification is still being finalized and may change.
