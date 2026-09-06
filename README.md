@@ -58,6 +58,7 @@ cd portable
 ### 2. Edit Your Effect
 
 Modify files in the `effect/` directory:
+
 - `definition.json` - Effect definition and parameters
 - `glsl/*.glsl` - WebGL shader code
 - `wgsl/*.wgsl` - WebGPU shader code
@@ -72,7 +73,7 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:2999/viewer/](http://localhost:2999/viewer/). After making changes to your effect files, click the **Reload Effect** button in the viewer or refresh the page.
+Open [http://localhost:2999/viewer/](http://localhost:2999/viewer/). After you change effect files, click **Reload Effect** in the viewer or refresh the page.
 
 ### 4. Package for Distribution
 
@@ -93,7 +94,7 @@ This creates `effect.zip`.
 To use your effect in Noisedeck or other Noise Factor applications:
 
 1. Open the application
-2. In the menu bar, go to **file** → **import effect from zip...**
+2. In the menu bar, select **file** → **import effect from zip...**
 3. Select your `effect.zip` file
 4. The effect's DSL program will load automatically
 
@@ -101,7 +102,7 @@ To use your effect in Noisedeck or other Noise Factor applications:
 
 ## Example Effect
 
-The included `effect/` directory contains a complete portable effect: a diagonal color gradient that smoothly rotates over time, looping seamlessly with the `time` uniform.
+The included `effect/` directory contains a complete portable effect. It draws a diagonal color gradient that rotates smoothly over time. The `time` uniform controls its seamless loop.
 
 **effect/definition.json:**
 ```json
